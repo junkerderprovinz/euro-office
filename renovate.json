@@ -1,0 +1,31 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":dependencyDashboard",
+    ":enableVulnerabilityAlertsWithLabel(security)"
+  ],
+  "timezone": "Europe/Vienna",
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies"],
+  "prHourlyLimit": 4,
+  "prConcurrentLimit": 6,
+  "packageRules": [
+    {
+      "description": "Euro Office documentserver base image tracks upstream's own floating :latest tag directly (see Dockerfile) -- no version to pin, no PR to merge. The weekly cron rebuild in build.yml keeps it current instead. Disabled here so Renovate does not propose pinning it to a digest, which would reintroduce the same PR-per-update friction one level down.",
+      "matchPackageNames": ["ghcr.io/euro-office/documentserver"],
+      "enabled": false
+    },
+    {
+      "description": "GitHub Actions: auto-merge all updates. No CI runs on PRs, so platformAutomerge merges as soon as the PR is open.",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["major", "minor", "patch", "digest"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "commitMessagePrefix": "ci:",
+      "labels": ["github-actions"]
+    }
+  ]
+}

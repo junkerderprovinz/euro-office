@@ -1,0 +1,30 @@
+NOTICE - Bundled Software in the Euro Office Unraid Wrapper Image
+===================================================================
+
+The GNU Affero General Public License v3.0 (AGPL-3.0, see LICENSE) covers ONLY the wrapper assets in this
+repository:
+  * Dockerfile
+  * chown-heal.sh, chown-heal.conf and print-banner.sh
+  * Unraid container template (maintained in the junkerderprovinz/unraid-apps repo)
+  * README, banner and icon artwork
+
+It does NOT relicense any software shipped inside the resulting container
+image. Each bundled component retains its upstream license:
+
+  * Euro Office Document Server    see https://github.com/euro-office/documentserver
+                                    for terms (a fork of ONLYOFFICE Document Server)
+  * Ubuntu 24.04 base + packages    various (GPL, LGPL, MIT, ...)
+                                    https://ubuntu.com
+
+Brand artwork
+-------------
+The Euro Office logo and any Euro Office branding used in .github/assets/ are the
+property of Euro Office and are used unmodified to identify the upstream project.
+They are NOT covered by this repository's AGPL-3.0 license and remain subject to
+Euro Office's trademark/brand terms. This is an independent, community-maintained
+packaging of Euro Office for Unraid and is not affiliated with or endorsed by
+Euro Office.
+
+When you run, redistribute or rebuild the resulting container image, you must
+comply with the licenses of all bundled components in addition to the AGPL-3.0 license
+that covers this repository.

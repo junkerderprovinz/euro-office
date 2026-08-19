@@ -1,0 +1,302 @@
+name: Build & Push
+
+# -----------------------------------------------------------------------------
+# Builds the Euro Office Unraid wrapper image and pushes to:
+#   * GitHub Container Registry  (ghcr.io/junkerderprovinz/euro-office)
+#   * Docker Hub                 (docker.io/<DOCKERHUB_USERNAME>/euro-office)
+#     - active only once the DOCKERHUB_USERNAME variable and DOCKERHUB_TOKEN
+#       secret are set together; until then the build stays GHCR-only.
+#
+# Single channel, tracking upstream's own floating :latest tag directly (ARG
+# BASE= in the Dockerfile) - no version pin, no Renovate PR to merge. The
+# weekly cron rebuild below just resolves whatever :latest currently points
+# to and republishes, same approach as the other own-image repos.
+#
+# Architecture: one NATIVE build job per platform - amd64 on ubuntu-latest,
+# arm64 on ubuntu-24.04-arm (free for public repos). Each job boots its image
+# as a smoke gate (chown-heal ran + Data ownership is correct, and
+# /hosting/discovery answers), pushes by digest, and a merge job assembles
+# the multi-arch manifest for both registries.
+#
+# Triggers:
+#   * Push to main           -> latest, sha-<short>
+#   * Tag v*.*.*              -> <version>, <major>.<minor>, <major>
+#   * Weekly cron (Sun 04 UTC) - picks up upstream Euro Office + Ubuntu updates
+#   * Manual workflow_dispatch
+# -----------------------------------------------------------------------------
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*.*.*' ]
+  schedule:
+    - cron: '0 4 * * 0'
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: euro-office
+
+jobs:
+  build:
+    strategy:
+      fail-fast: true
+      matrix:
+        arch: [ amd64, arm64 ]
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (labels)
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+
+      # Build natively for this arch and load it locally for the smoke gate.
+      - name: Build ${{ matrix.arch }} image for smoke test
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: false
+          load: true
+          tags: euro-office:smoke-${{ matrix.arch }}
+          cache-from: type=gha,scope=build-${{ matrix.arch }}
+
+      # Smoke gate: (1) our extra files are present and executable; (2) the
+      # container boots, chown-heal actually heals Data's ownership to the
+      # 'ds' user, and Euro Office's own WOPI discovery endpoint answers -
+      # catches a broken supervisor conf or a chown-heal regression that a
+      # static file check would miss.
+      - name: Smoke test - ${{ matrix.arch }} must heal permissions and answer WOPI discovery
+        run: |
+          set -euo pipefail
+          img=euro-office:smoke-${{ matrix.arch }}
+
+          echo "== presence gate =="
+          docker run --rm --entrypoint /bin/sh "$img" -c '
+            set -e
+            test -x /usr/local/bin/chown-heal.sh || { echo "chown-heal.sh not executable"; exit 1; }
+            test -x /usr/local/bin/print-banner.sh || { echo "print-banner.sh not executable"; exit 1; }
+            test -f /etc/supervisor/conf.d/00-chown-heal.conf || { echo "chown-heal.conf missing"; exit 1; }
+            id ds
+          '
+
+          echo "== boot gate =="
+          name=eo-smoke-${{ matrix.arch }}
+          docker rm -f "$name" >/dev/null 2>&1 || true
+          docker run -d --name "$name" \
+            -e WOPI_ENABLED=true \
+            -e JWT_ENABLED=true \
+            -e JWT_SECRET=smoketest-secret \
+            "$img"
+
+          ok=0
+          deadline=$((SECONDS + 150))
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            if docker logs "$name" 2>&1 | grep -q '\[chown-heal\] done'; then
+              echo "chown-heal completed after ${SECONDS}s - checking Data ownership + discovery endpoint..."
+              owner="$(docker exec "$name" stat -c '%U:%G' /var/www/euro-office/Data)"
+              echo "Data owner: ${owner}"
+              [ "$owner" = "ds:ds" ] || { echo "Data is NOT owned by ds:ds"; ok=0; break; }
+              if docker exec "$name" curl -fsS -o /dev/null http://localhost/hosting/discovery; then
+                ok=1
+              else
+                echo "discovery endpoint did not answer 200"
+              fi
+              break
+            fi
+            if [ -z "$(docker ps -q --filter name="$name")" ]; then
+              echo "container exited early:"; break
+            fi
+            sleep 3
+          done
+
+          echo "== last logs =="
+          docker logs "$name" 2>&1 | tail -60 || true
+          docker rm -f "$name" >/dev/null 2>&1 || true
+          [ "$ok" = "1" ] || { echo "smoke failed"; exit 1; }
+          echo "smoke passed"
+
+      # CVE scan of the locally-loaded smoke image. Report-only (exit-code 0) so a
+      # finding never blocks the build - results land in the repo Security tab.
+      - name: Scan image for CVEs (Trivy)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: euro-office:smoke-${{ matrix.arch }}
+          format: sarif
+          output: trivy-${{ matrix.arch }}.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Upload Trivy results to the Security tab
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-${{ matrix.arch }}.sarif
+          category: trivy-${{ matrix.arch }}
+
+      # Push this arch by digest (no tags yet - the merge job assembles the
+      # multi-arch manifest under the final tags).
+      - name: Push ${{ matrix.arch }} by digest
+        id: push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ matrix.platform }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=build-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.push.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v7
+        with:
+          name: digests-${{ matrix.arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v8
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Docker Hub mirror - active only once DOCKERHUB_USERNAME (variable) and
+      # DOCKERHUB_TOKEN (secret) are set together; skipped otherwise so CI stays
+      # green and GHCR-only until then.
+      - name: Login to Docker Hub
+        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata (tags)
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+            name=docker.io/${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }},enable=${{ vars.DOCKERHUB_USERNAME != '' }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha,format=short
+
+      # Assemble the multi-arch manifest for EVERY tag (both registries) from the
+      # per-arch digests pushed to GHCR. imagetools copies platform images across
+      # registries where needed (the Docker Hub tags).
+      - name: Create multi-arch manifest
+        working-directory: /tmp/digests
+        run: |
+          set -euo pipefail
+          src="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}"
+          sources=""
+          for d in *; do sources="$sources ${src}@sha256:${d}"; done
+          echo "sources:${sources}"
+          tagargs=""
+          while IFS= read -r tag; do
+            [ -n "$tag" ] && tagargs="$tagargs -t $tag"
+          done <<< "$DOCKER_METADATA_OUTPUT_TAGS"
+          echo "tags:${tagargs}"
+          # Cross-registry copy (GHCR -> Docker Hub) can hit a transient HTTP/2
+          # PROTOCOL_ERROR; retry a few times before failing.
+          n=0
+          until docker buildx imagetools create ${tagargs} ${sources}; do
+            n=$((n + 1))
+            if [ "$n" -ge 4 ]; then echo "imagetools create failed after $n attempts"; exit 1; fi
+            echo "imagetools create failed (attempt $n); retrying in $((n * 15))s..."
+            sleep $((n * 15))
+          done
+
+      - name: Inspect
+        run: |
+          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+  # Mirror the GitHub README to the Docker Hub repo description (once, after the
+  # manifest exists). Needs the DOCKERHUB_PASSWORD secret (a PAT scoped to edit
+  # repos, or the account password) - the push token lacks that scope and
+  # returns 403. Skipped until the secret is set, so a missing credential never
+  # fails the build.
+  dockerhub-description:
+    needs: merge
+    if: ${{ vars.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}
+    # Cosmetic README->Docker Hub sync; a credential hiccup here (e.g. 401) must
+    # never fail the image build/publish, which is the real deliverable.
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (README for Docker Hub sync)
+        uses: actions/checkout@v7
+
+      - name: Docker Hub description sync ready?
+        id: dhdesc
+        env:
+          PW: ${{ secrets.DOCKERHUB_PASSWORD }}
+        run: |
+          if [ -n "$PW" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; else echo "DOCKERHUB_PASSWORD not set - skipping Docker Hub description sync"; echo "go=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Sync README to Docker Hub
+        if: ${{ steps.dhdesc.outputs.go == 'true' }}
+        uses: peter-evans/dockerhub-description@v5
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          repository: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          short-description: "One-click Euro Office document server for Unraid - fixes a real upstream Data-volume permission gap."
+          enable-url-completion: true
