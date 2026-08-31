@@ -5,28 +5,62 @@
     "helpers:pinGitHubActionDigests",
     ":semanticCommits",
     ":dependencyDashboard",
-    ":enableVulnerabilityAlertsWithLabel(security)"
+    ":enableVulnerabilityAlertsWithLabel(security)",
+    "docker:pinDigests"
   ],
   "timezone": "Europe/Vienna",
-  "schedule": ["before 6am on monday"],
-  "labels": ["dependencies"],
+  "schedule": [
+    "before 6am on monday"
+  ],
+  "labels": [
+    "dependencies"
+  ],
   "prHourlyLimit": 4,
   "prConcurrentLimit": 6,
   "packageRules": [
     {
       "description": "Euro Office documentserver base image tracks upstream's own floating :latest tag directly (see Dockerfile) -- no version to pin, no PR to merge. The weekly cron rebuild in build.yml keeps it current instead. Disabled here so Renovate does not propose pinning it to a digest, which would reintroduce the same PR-per-update friction one level down.",
-      "matchPackageNames": ["ghcr.io/euro-office/documentserver"],
+      "matchPackageNames": [
+        "ghcr.io/euro-office/documentserver"
+      ],
       "enabled": false
     },
     {
       "description": "GitHub Actions: auto-merge all updates. No CI runs on PRs, so platformAutomerge merges as soon as the PR is open.",
-      "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["major", "minor", "patch", "digest"],
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor",
+        "patch",
+        "digest"
+      ],
       "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true,
       "commitMessagePrefix": "ci:",
-      "labels": ["github-actions"]
+      "labels": [
+        "github-actions"
+      ]
+    },
+    {
+      "description": "Docker: auto-merge digest pins and digest refreshes (same tag, new build). Major/minor stay open for review.",
+      "matchManagers": [
+        "dockerfile",
+        "docker-compose"
+      ],
+      "matchUpdateTypes": [
+        "pinDigest",
+        "digest"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "commitMessagePrefix": "ci:",
+      "labels": [
+        "docker"
+      ]
     }
   ]
 }
