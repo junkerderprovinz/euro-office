@@ -153,6 +153,7 @@ jobs:
           output: trivy-${{ matrix.arch }}.sarif
           severity: HIGH,CRITICAL
           ignore-unfixed: true
+          trivyignores: .trivyignore.yaml
           exit-code: "0"
 
       - name: Upload Trivy results to the Security tab
