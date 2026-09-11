@@ -69,9 +69,11 @@ For anything else, please [open an issue](https://github.com/junkerderprovinz/eu
 ## 6. Support this project
 
 <p align="center">
-<a href="https://www.buymeacoffee.com/junkerderprovinz">
-  <img src="https://raw.githubusercontent.com/junkerderprovinz/unraid-apps/main/.github/assets/button-buy-me-a-coffee.svg" alt="Buy Me A Coffee" width="220">
-</a>
+  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/button-buy-me-a-coffee-live.svg" alt="Buy me a coffee" width="160"></a>
+  &nbsp;
+  <a href="https://paypal.me/hallelujadesign"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/button-paypal-live.svg" alt="PayPal" width="160"></a>
+  &nbsp;
+  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/button-crypto-live.svg" alt="Donate with crypto" width="160"></a>
 </p>
 
 Questions? Check the [issues](https://github.com/junkerderprovinz/euro-office/issues) or open a new one.
