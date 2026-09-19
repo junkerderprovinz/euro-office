@@ -9,7 +9,7 @@
   <a href="https://github.com/junkerderprovinz/euro-office/pkgs/container/euro-office"><img src="https://img.shields.io/badge/Image-junkerderprovinz%2Feuro--office-1d99f3?style=for-the-badge&logo=docker&logoColor=white" alt="Image" height="36"></a>&nbsp;
   <a href="https://github.com/junkerderprovinz/opencloud"><img src="https://img.shields.io/badge/Pairs%20with-OpenCloud-f2b705?style=for-the-badge&logo=owncloud&logoColor=black" alt="OpenCloud" height="36"></a>&nbsp;
   <a href="https://unraid.net"><img src="https://img.shields.io/badge/Unraid-Template-f15a2c?style=for-the-badge&logo=unraid&logoColor=white" alt="Unraid" height="36"></a>&nbsp;
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License" height="36"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-AGPL--3.0-blue?style=for-the-badge&logo=gnu&logoColor=white" alt="License: AGPL-3.0" height="36"></a>
 </p>
 
 <p align="center">
@@ -101,7 +101,7 @@ the report that turned this up.
 - ✅ Sensible Unraid defaults: HTTP on a mapped port, optional persistence volumes, `--restart=unless-stopped`
 - ✅ Reverse-proxy friendly, terminate TLS in front and hand the editor plain HTTP
 - ✅ Bundles its own database and converter, no external services to run
-- ✅ MIT-licensed wrapper, fork and adapt freely
+- ✅ AGPL-3.0 wrapper, fork and adapt it under the same license
 
 <br>
 
@@ -281,8 +281,8 @@ Pull requests welcome. Issues:
 
 **Licensing, dual:**
 
-- This **wrapper** (Unraid template, README, banner/icon artwork) is licensed under the [MIT License](../LICENSE).
-- **Euro Office itself** is developed by the Euro Office project and retains its upstream license, see <https://github.com/euro-office/documentserver>. When you run, redistribute or rebuild the resulting container image, you must comply with **all** upstream licenses, not only with this wrapper's MIT license.
+- This **wrapper** (Dockerfile, `chown-heal.sh`, `print-banner.sh`, Unraid template, README and banner/icon artwork) is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
+- **Euro Office itself** is developed by the Euro Office project and retains its upstream license, see <https://github.com/euro-office/documentserver>. When you run, redistribute or rebuild the resulting container image, you must comply with **all** upstream licenses, not only with this wrapper's AGPL-3.0.
 
 ### Credits
 
