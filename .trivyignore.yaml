@@ -13,5 +13,5 @@ secrets:
       loopback Postgres (DB_HOST defaults to localhost, 5432 is never published).
       nginx never uses it: the upstream entrypoint writes an SSL vhost only when
       SSL_CERTIFICATE_PATH and SSL_KEY_PATH are both set and both files exist.
-      Deleting the file is NOT the fix - pg_createcluster points ssl_key_file at
+      Deleting the file is not the fix: pg_createcluster points ssl_key_file at
       it, so removing it would stop Postgres starting.

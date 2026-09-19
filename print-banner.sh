@@ -1,12 +1,9 @@
 #!/bin/sh
-# -----------------------------------------------------------------------------
 # print-banner.sh <container-name> <subtitle>
-# Shared Junker-der-Provinz init-log banner (POSIX sh - the base image is
-# Ubuntu but the script stays sh-only so it matches every other house image).
-# The ASCII art in /usr/local/share/banner.txt is identical across all
-# container images; the name + subtitle are passed at runtime so the shared
-# art stays generic.
-# -----------------------------------------------------------------------------
+# Prints the shared Junker der Provinz init-log banner. POSIX sh like every
+# other house image, although this base image is Ubuntu. The ASCII art in
+# /usr/local/share/banner.txt is the same in every image; name and subtitle are
+# passed at runtime so the art stays generic.
 CONTAINER="${1:-Container}"
 SUBTITLE="${2:-}"
 BANNER_FILE="/usr/local/share/banner.txt"
@@ -25,7 +22,6 @@ else
     echo ""
 fi
 
-# Clean title block: name + subtitle on ONE line (house look, no rules).
 if [ -n "${SUBTITLE}" ]; then
     printf '  %s · %s\n' "${CONTAINER}" "${SUBTITLE}"
 else
