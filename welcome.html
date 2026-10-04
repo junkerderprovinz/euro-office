@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Euro Office</title>
+    <link href="css/favicon_eo.svg" rel="shortcut icon" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="css/stylesheet.css">
+    <style>
+        body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+        dl { font-size: 14px; line-height: 22px; margin: 0 0 24px; }
+        dt { font-weight: 600; margin-top: 12px; }
+        dd { margin: 0; }
+        code { background: #eee; border-radius: 3px; padding: 1px 5px; }
+        #status { font-size: 14px; font-weight: 600; }
+        .ready { color: #2e7d32; }
+        .waiting { color: #b26a00; }
+        @media (prefers-color-scheme: dark) {
+            body { background: #1b1b1b; color: #ddd; }
+            .gray-block { background: #262626; }
+            code { background: #333; color: #eee; }
+            a, a:hover, a:visited { color: #4fb3f0; }
+            .ready { color: #66bb6a; }
+            .waiting { color: #ffb74d; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="css/logo.svg" alt="Euro Office" height="28">
+    </header>
+    <div class="gray-block">
+        <div class="content-block">
+            <h1 class="orange-text">Euro Office is running</h1>
+            <p>Euro Office is the editor behind OpenCloud, and this page is all it shows on its own. You open and create documents in OpenCloud, and they open in Euro Office right there.</p>
+            <p id="status"></p>
+        </div>
+    </div>
+    <div>
+        <div class="content-block">
+            <h1>Connect OpenCloud</h1>
+            <p>On the Unraid Docker tab, click the OpenCloud icon, choose Edit and switch to Advanced View (top right). Set these three fields and click Apply:</p>
+            <dl>
+                <dt>Web office suite</dt>
+                <dd><code>euro-office</code></dd>
+                <dt>Office document server URL</dt>
+                <dd><code id="server-url">https://YOUR-SERVER-IP:9943</code></dd>
+                <dt>Office WOPI secret</dt>
+                <dd>exactly the same text as the JWT secret of this Euro Office container</dd>
+            </dl>
+            <p>After that, the New button in OpenCloud offers documents, spreadsheets and presentations.</p>
+        </div>
+        <div class="content-block">
+            <h1>Certificate</h1>
+            <p id="cert">Euro Office uses a certificate it created for itself. Open this page once over https and accept the browser's warning, otherwise the browser will not show the editor inside OpenCloud.</p>
+        </div>
+    </div>
+    <div class="black-block">
+        <div class="content-block">
+            <h1>Getting help</h1>
+            <p>Setup and troubleshooting: <a href="https://github.com/junkerderprovinz/euro-office#readme" target="_blank" rel="noopener">README</a>. Bugs and feature requests: <a href="https://github.com/junkerderprovinz/unraid-apps/issues" target="_blank" rel="noopener">GitHub issues</a>.</p>
+        </div>
+    </div>
+    <script>
+        (function () {
+            var secure = location.protocol === "https:";
+            var url = secure ? location.origin : "https://" + location.hostname + ":9943";
+            document.getElementById("server-url").textContent = url;
+
+            var cert = document.getElementById("cert");
+            if (secure) {
+                cert.textContent = "This browser has accepted the certificate, so it can show the editor inside OpenCloud. Every other browser or device needs to open this page once over https and accept the warning too.";
+            } else {
+                cert.innerHTML = "Euro Office uses a certificate it created for itself. Open <a></a> once and accept the browser's warning, otherwise the browser will not show the editor inside OpenCloud. If you mapped a different HTTPS port, use that one instead of 9943.";
+                var link = cert.querySelector("a");
+                link.href = url + "/";
+                link.textContent = url;
+            }
+
+            var status = document.getElementById("status");
+            status.textContent = "Checking the editor service...";
+            fetch("../hosting/discovery", { cache: "no-store" }).then(function (r) {
+                if (!r.ok) throw new Error(r.status);
+                status.textContent = "The editor service is ready.";
+                status.className = "ready";
+            }).catch(function () {
+                status.textContent = "The editor service is still starting. Reload this page in a minute.";
+                status.className = "waiting";
+            });
+        })();
+    </script>
+</body>
+</html>
