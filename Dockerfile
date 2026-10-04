@@ -26,11 +26,30 @@ LABEL org.opencontainers.image.title="euro-office (Unraid wrapper)" \
 
 # The base image sets no USER, so these steps run as root. Supervisord picks up
 # the conf file alongside the vendor's own programs.
-COPY chown-heal.sh print-banner.sh /usr/local/bin/
+COPY auto-tls.sh chown-heal.sh print-banner.sh /usr/local/bin/
 COPY chown-heal.conf /etc/supervisor/conf.d/00-chown-heal.conf
 COPY .github/assets/banner-raw.txt /usr/local/share/banner-raw.txt
+# The vendor's start page explains the test example and the admin panel, which
+# are both switched off here and only lead people away from OpenCloud. The
+# vendor entrypoint points the index at docker.html, the build default is
+# linux.html.
+COPY welcome.html /var/www/euro-office/documentserver-example/welcome/docker.html
+COPY welcome.html /var/www/euro-office/documentserver-example/welcome/linux.html
 
-# A stray CR in the banner art would show up in the log.
+# A stray CR in the banner art would show up in the log. With a certificate the
+# vendor's port 80 server only redirects to https://$host, which drops the
+# mapped port and lands on the Unraid web UI, so it serves the editor instead;
+# that also keeps every existing http setup working. The grep fails the build
+# if upstream changes the template under us.
+ARG SSL_TMPL=/etc/euro-office/documentserver/nginx/ds-ssl.conf.tmpl
 RUN tr -d '\r' < /usr/local/share/banner-raw.txt > /usr/local/share/banner.txt \
  && rm /usr/local/share/banner-raw.txt \
- && chmod +x /usr/local/bin/chown-heal.sh /usr/local/bin/print-banner.sh
+ && sed -i \
+      -e '/## Redirects all traffic to the HTTPS host/d' \
+      -e '/root \/nowhere;/d' \
+      -e 's|rewrite ^ https://$host$request_uri? permanent;|include /etc/nginx/includes/ds-*.conf;|' \
+      "${SSL_TMPL}" \
+ && ! grep -q 'rewrite ^ https' "${SSL_TMPL}" \
+ && chmod +x /usr/local/bin/auto-tls.sh /usr/local/bin/chown-heal.sh /usr/local/bin/print-banner.sh
+
+ENTRYPOINT ["/usr/local/bin/auto-tls.sh"]

@@ -62,14 +62,15 @@ straight into OpenCloud, Nextcloud or ownCloud.
 This repository is **not a fork of Euro Office**. It builds a thin wrapper image
 around the upstream
 [`ghcr.io/euro-office/documentserver`](https://github.com/euro-office/documentserver/pkgs/container/documentserver),
-adding exactly one thing: a small supervisor program that repairs the ownership
-of the `Data` volume on boot. Section 2 explains why that is needed. The Unraid
-template lives in
+adding three things: it repairs the ownership of the `Data` volume on boot,
+serves https out of the box with a certificate it creates for itself, and shows
+a start page that tells you what to enter in OpenCloud. Section 2 explains why.
+The Unraid template lives in
 [unraid-apps](https://github.com/junkerderprovinz/unraid-apps/tree/main/euro-office)
 and points at the wrapper image published here.
 
 **This is not a standalone app.** It is the editor back-end for a file server.
-On its own it only serves an internal welcome page. You point your cloud (the
+On its own it only shows its start page. You point your cloud (the
 [OpenCloud](https://github.com/junkerderprovinz/opencloud) container) at it, and
 then edit files that live in that cloud.
 
@@ -84,12 +85,23 @@ build. On a freshly bind-mounted `Data` folder, which is exactly what Unraid
 creates, the document server's admin panel and in some configurations editing
 itself fail with a permission error.
 
-This image adds one thing to the upstream image and nothing else: a small
-supervisor program that re-asserts `Data`'s ownership during the first seconds
-of boot, before the `ds-*` services start. `ENTRYPOINT` and the vendor's own
-`entrypoint.sh` are untouched. See
+This image adds a small supervisor program that re-asserts `Data`'s ownership
+during the first seconds of boot, before the `ds-*` services start. See
 [unraid-apps#7](https://github.com/junkerderprovinz/unraid-apps/issues/7) for
 the report that turned this up.
+
+The same report showed the second problem. OpenCloud always runs on https, and
+the upstream image serves plain http unless you hand it a certificate. A browser
+refuses to load an http editor inside an https page, so documents open blank and
+neither container logs a thing. This image therefore starts with a short script
+that creates a self-signed certificate in `Data` when none is configured, before
+it hands over to the vendor's own `entrypoint.sh`. The plain http port keeps
+serving the editor instead of redirecting to `https://<host>` without the port,
+which on Unraid lands on the Unraid web UI.
+
+Finally, the vendor's start page explains the test example and the admin panel,
+which are both off and only lead people away from OpenCloud. It is replaced by a
+page that says whether the editor is ready and what to enter in OpenCloud.
 
 <br>
 
@@ -98,7 +110,9 @@ the report that turned this up.
 - ✅ Edits **.docx / .xlsx / .pptx** and **.odt / .ods / .odp** right in the browser
 - ✅ **WOPI** protocol pre-enabled (`WOPI_ENABLED=true`), so OpenCloud can open and save documents
 - ✅ One shared **JWT secret** signs every request between cloud and editor
-- ✅ Sensible Unraid defaults: HTTP on a mapped port, optional persistence volumes, `--restart=unless-stopped`
+- ✅ **https out of the box** with a self-signed certificate it creates on the first start, or your own certificate
+- ✅ A start page that shows whether the editor is ready and what to enter in OpenCloud
+- ✅ Sensible Unraid defaults: optional persistence volumes, `--restart=unless-stopped`
 - ✅ Reverse-proxy friendly, terminate TLS in front and hand the editor plain HTTP
 - ✅ Bundles its own database and converter, no external services to run
 - ✅ AGPL-3.0 wrapper, fork and adapt it under the same license
@@ -126,16 +140,15 @@ next section. Leave **Enable WOPI** on `true`.
 Hit **Apply**. First start pulls the image and warms up the bundled database
 and converter, this takes a minute or two on the very first boot.
 
-### Step 3: wait for the server to be ready
+### Step 3: open the start page and accept the certificate
 
-Open a shell and confirm the WOPI discovery endpoint answers with XML:
+Click the container's **WebUI** button, which opens `https://<unraid-ip>:9943`.
+The browser warns about the certificate, because Euro Office created it for
+itself. Accept it, and the browser will show the editor inside OpenCloud later.
 
-```bash
-curl -s http://<unraid-ip>:9900/hosting/discovery | head -c 200
-```
-
-Once that returns an `<wopi-discovery>` document, the editor is ready. Then wire
-it to OpenCloud (next section).
+The page that opens says whether the editor is ready and lists the three fields
+to set in OpenCloud (next section). Every other browser or device you edit
+documents on needs to open this address and accept the warning once as well.
 
 ### Manual install (pre-CA-listing)
 
@@ -157,11 +170,14 @@ dropdown, pick **Euro-Office** under *User templates*.
 docker run -d \
   --name euro-office \
   --restart unless-stopped \
+  -p 9943:443 \
   -p 9900:80 \
+  -v ./euro-office-data:/var/www/euro-office/Data \
   -e WOPI_ENABLED=true \
   -e JWT_ENABLED=true \
   -e JWT_SECRET=change-me-to-a-long-random-string \
-  ghcr.io/euro-office/documentserver:latest
+  -e USE_UNAUTHORIZED_STORAGE=true \
+  ghcr.io/junkerderprovinz/euro-office:latest
 ```
 
 <br>
@@ -174,19 +190,27 @@ is the cloud that stores your files. Connect them in the OpenCloud template:
 | OpenCloud field | Value |
 |---|---|
 | **Web office suite** | `euro-office` |
-| **Office document server URL** | `http://<euro-office-ip>:9900` (or your reverse-proxy https URL) |
+| **Office document server URL** | `https://<unraid-ip>:9943` (or your reverse-proxy https URL) |
 | **Office WOPI secret** | the **same** string you set as the **JWT secret** here |
 
 The two secrets **must be identical**, that is what lets the cloud and the
-editor trust each other. After applying both containers, open a document in
-OpenCloud, it now opens in Euro Office. OpenCloud uses Euro Office for Microsoft
-formats by default and Collabora for OpenDocument, but Euro Office edits both.
+editor trust each other. The URL has to be https, because OpenCloud is: an
+`http://` address here leaves the editor blank, and the OpenCloud log warns
+about it at startup.
+
+After applying both containers, the **New** button in OpenCloud offers
+documents, spreadsheets and presentations, and existing files open in Euro
+Office. OpenCloud uses Euro Office for Microsoft formats by default and Collabora
+for OpenDocument, but Euro Office edits both.
 
 > [!TIP]
-> Behind the internet, put Euro Office behind a reverse proxy that terminates
-> TLS (e.g. `https://office.example.com`) and use that https URL in OpenCloud.
-> If OpenCloud itself uses a self-signed certificate, set **Allow self-signed
-> upstream** = `true` on this container so the editor can fetch documents from it.
+> To skip the certificate warning on every device, give Euro Office a certificate
+> your browsers already trust: put it in the **Certificates** folder and fill in
+> **TLS certificate** and **TLS private key** (Advanced View). Unraid's combined
+> `*_unraid_bundle.pem` works too, enter that one file in both fields. From the
+> internet, put Euro Office behind a reverse proxy that terminates TLS (e.g.
+> `https://office.example.com`), point the proxy at the plain http port 9900 and
+> use the proxy's URL in OpenCloud.
 
 <br>
 
@@ -197,20 +221,24 @@ formats by default and Collabora for OpenDocument, but Euro Office edits both.
 | `JWT_SECRET` | *(required)* | Shared secret that signs cloud ↔ editor traffic. Must equal OpenCloud's *Office WOPI secret*. |
 | `WOPI_ENABLED` | `true` | Enables the WOPI protocol OpenCloud uses. Keep `true`. |
 | `JWT_ENABLED` | `true` | Require the signed JWT on every request. Keep `true`; only disable for isolated LAN testing. |
-| `USE_UNAUTHORIZED_STORAGE` | `false` | Set `true` when the cloud serves a self-signed certificate. |
+| `USE_UNAUTHORIZED_STORAGE` | `true` in the template | Lets the editor fetch documents from a cloud with a self-signed certificate, which OpenCloud on Unraid has. Set `false` once your cloud has a valid one. |
+| `SSL_CERTIFICATE_PATH` / `SSL_KEY_PATH` | *(empty)* | Your own certificate and key, e.g. `/certs/cert.pem` and `/certs/key.pem`. Empty, or a path that does not exist, means the self-signed certificate in `Data/certs`. |
+| `AUTO_TLS` | `true` | Set `false` to keep the vendor's behaviour of serving plain http only. |
 
 ### Ports & Volumes
 
 | Port | Purpose |  | Volume (optional) | Purpose |
 |---|---|---|---|---|
-| `80` → `9900` | Document server HTTP / WOPI |  | `/var/www/euro-office/Data` | Keys, fonts cache, forgotten files |
-|  |  |  | `/var/log/euro-office` | Server logs, **leave unmounted**, see below |
+| `443` → `9943` | Editor over https, the address OpenCloud uses |  | `/var/www/euro-office/Data` | Keys, the self-signed certificate, fonts cache, forgotten files |
+| `80` → `9900` | Plain http, for a reverse proxy |  | `/var/log/euro-office` | Server logs, **leave unmounted**, see below |
 |  |  |  | `/var/lib/postgresql` | Bundled database, **leave unmounted**, see below |
+|  |  |  | `/certs` (read-only) | Your own certificate, if you use one |
 
 `Data` is optional: for a pure WOPI back-end the editor is effectively stateless
-(your documents live in OpenCloud), mount it only to persist the internal cache
-across restarts. It is empty inside the image, so a bind mount there hides
-nothing.
+(your documents live in OpenCloud). Mounting it keeps the internal cache and the
+self-signed certificate across container updates, so browsers that accepted the
+certificate do not warn again. It is empty inside the image, so a bind mount
+there hides nothing.
 
 **`Logs` and `Database` are different and default to unmounted on purpose.** The
 image ships both directories pre-built, and a bind mount from an empty host
@@ -235,9 +263,18 @@ specific version, set an explicit tag in the template's *Repository* field
 ## 8. Troubleshooting
 
 <details>
+<summary><b>The editor area in OpenCloud stays blank, or the browser says "this content is blocked"</b></summary>
+
+- OpenCloud's **Office document server URL** still starts with `http://`. Browsers refuse to load an http editor inside the https OpenCloud page, and since the request is never sent, neither container logs anything. Change it to `https://<unraid-ip>:9943`. The OpenCloud log warns about this at startup.
+- Or this browser has not accepted the certificate yet: open `https://<unraid-ip>:9943` and accept the warning.
+- Or the **HTTPS Port** mapping is missing on an install from an older template: add a port with container port `443` and host port `9943` on the container's Edit page.
+</details>
+
+<details>
 <summary><b>Documents won't open in OpenCloud ("error finding app providers" / editor never loads)</b></summary>
 
-- Confirm the discovery endpoint answers: `curl -s http://<ip>:9900/hosting/discovery | head` should return `<wopi-discovery>` XML. If it times out, the server is still starting, wait a minute after first boot.
+- Open `https://<unraid-ip>:9943`: the start page says whether the editor service is ready. Right after the first boot it needs a minute or two.
+- If Euro Office was down or came up after OpenCloud, the document entries in OpenCloud's **New** menu are missing for a moment. They come back on their own a minute or two after Euro Office is ready.
 - The **JWT secret** here and OpenCloud's **Office WOPI secret** must be byte-for-byte identical. A mismatch fails silently.
 - Make sure OpenCloud's **Office document server URL** is reachable *from the OpenCloud container* (use the LAN IP or a resolvable proxy hostname, not `localhost`).
 </details>
@@ -245,7 +282,7 @@ specific version, set an explicit tag in the template's *Repository* field
 <details>
 <summary><b>"Download failed" when saving, or the editor can't fetch the file</b></summary>
 
-- If OpenCloud uses a self-signed certificate, set **Allow self-signed upstream** = `true` (`USE_UNAUTHORIZED_STORAGE=true`) on this container.
+- If OpenCloud uses a self-signed certificate, **Allow self-signed upstream** (`USE_UNAUTHORIZED_STORAGE`) has to be `true` on this container. That is the default in the template; installs from before it may still have `false`.
 - If you front OpenCloud with a reverse proxy, make sure the URL you gave OpenCloud is the one the editor can actually reach.
 </details>
 
