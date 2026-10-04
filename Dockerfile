@@ -39,9 +39,15 @@ COPY welcome.html /var/www/euro-office/documentserver-example/welcome/linux.html
 # A stray CR in the banner art would show up in the log. With a certificate the
 # vendor's port 80 server only redirects to https://$host, which drops the
 # mapped port and lands on the Unraid web UI, so it serves the editor instead;
-# that also keeps every existing http setup working. The grep fails the build
-# if upstream changes the template under us.
+# that also keeps every existing http setup working.
+#
+# OpenCloud serves the editor under its own address at /euro-office/ and sends
+# X-Forwarded-Prefix, so every server strips that prefix again. The rewrite
+# has to follow the secret, because `rewrite ... last` skips the server's later
+# `set` lines and the signed cache links would then fail with 403. The greps
+# fail the build if upstream changes the templates under us.
 ARG SSL_TMPL=/etc/euro-office/documentserver/nginx/ds-ssl.conf.tmpl
+ARG HTTP_TMPL=/etc/euro-office/documentserver/nginx/ds.conf.tmpl
 RUN tr -d '\r' < /usr/local/share/banner-raw.txt > /usr/local/share/banner.txt \
  && rm /usr/local/share/banner-raw.txt \
  && sed -i \
@@ -50,6 +56,9 @@ RUN tr -d '\r' < /usr/local/share/banner-raw.txt > /usr/local/share/banner.txt \
       -e 's|rewrite ^ https://$host$request_uri? permanent;|include /etc/nginx/includes/ds-*.conf;|' \
       "${SSL_TMPL}" \
  && ! grep -q 'rewrite ^ https' "${SSL_TMPL}" \
+ && sed -i 's|^\(  set \$secure_link_secret .*;\)$|\1\n  rewrite ^/euro-office(/.*)$ $1 last;|' "${SSL_TMPL}" "${HTTP_TMPL}" \
+ && [ "$(grep -c '^  rewrite ^/euro-office' "${SSL_TMPL}")" = 3 ] \
+ && [ "$(grep -c '^  rewrite ^/euro-office' "${HTTP_TMPL}")" = 1 ] \
  && chmod +x /usr/local/bin/auto-tls.sh /usr/local/bin/chown-heal.sh /usr/local/bin/print-banner.sh
 
 ENTRYPOINT ["/usr/local/bin/auto-tls.sh"]

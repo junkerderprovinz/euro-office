@@ -62,9 +62,10 @@ straight into OpenCloud, Nextcloud or ownCloud.
 This repository is **not a fork of Euro Office**. It builds a thin wrapper image
 around the upstream
 [`ghcr.io/euro-office/documentserver`](https://github.com/euro-office/documentserver/pkgs/container/documentserver),
-adding three things: it repairs the ownership of the `Data` volume on boot,
-serves https out of the box with a certificate it creates for itself, and shows
-a start page that tells you what to enter in OpenCloud. Section 2 explains why.
+adding four things: it repairs the ownership of the `Data` volume on boot, lets
+OpenCloud show the editor under OpenCloud's own address, serves https out of the
+box for other clouds, and shows a start page that tells you what to enter in
+OpenCloud. Section 2 explains why.
 The Unraid template lives in
 [unraid-apps](https://github.com/junkerderprovinz/unraid-apps/tree/main/euro-office)
 and points at the wrapper image published here.
@@ -93,11 +94,19 @@ the report that turned this up.
 The same report showed the second problem. OpenCloud always runs on https, and
 the upstream image serves plain http unless you hand it a certificate. A browser
 refuses to load an http editor inside an https page, so documents open blank and
-neither container logs a thing. This image therefore starts with a short script
-that creates a self-signed certificate in `Data` when none is configured, before
-it hands over to the vendor's own `entrypoint.sh`. The plain http port keeps
-serving the editor instead of redirecting to `https://<host>` without the port,
-which on Unraid lands on the Unraid web UI.
+neither container logs a thing. The
+[OpenCloud](https://github.com/junkerderprovinz/opencloud) container therefore
+passes the editor through its own address at `/euro-office/`, and this image
+strips that prefix again in every nginx server. The browser only ever talks to
+OpenCloud, so plain http between the two containers is fine and there is no
+second certificate to accept.
+
+Nextcloud and ownCloud load the editor straight from the document server. For
+them this image starts with a short script that creates a self-signed
+certificate in `Data` when none is configured, before it hands over to the
+vendor's own `entrypoint.sh`. The plain http port keeps serving the editor
+instead of redirecting to `https://<host>` without the port, which on Unraid
+lands on the Unraid web UI.
 
 Finally, the vendor's start page explains the test example and the admin panel,
 which are both off and only lead people away from OpenCloud. It is replaced by a
@@ -110,7 +119,8 @@ page that says whether the editor is ready and what to enter in OpenCloud.
 - ✅ Edits **.docx / .xlsx / .pptx** and **.odt / .ods / .odp** right in the browser
 - ✅ **WOPI** protocol pre-enabled (`WOPI_ENABLED=true`), so OpenCloud can open and save documents
 - ✅ One shared **JWT secret** signs every request between cloud and editor
-- ✅ **https out of the box** with a self-signed certificate it creates on the first start, or your own certificate
+- ✅ **Runs under OpenCloud's address**: plain http between the containers, no certificate to accept, only OpenCloud needs to be reachable from outside
+- ✅ **https out of the box** for Nextcloud and ownCloud, with a self-signed certificate it creates on the first start, or your own certificate
 - ✅ A start page that shows whether the editor is ready and what to enter in OpenCloud
 - ✅ Sensible Unraid defaults: optional persistence volumes, `--restart=unless-stopped`
 - ✅ Reverse-proxy friendly, terminate TLS in front and hand the editor plain HTTP
@@ -140,15 +150,11 @@ next section. Leave **Enable WOPI** on `true`.
 Hit **Apply**. First start pulls the image and warms up the bundled database
 and converter, this takes a minute or two on the very first boot.
 
-### Step 3: open the start page and accept the certificate
+### Step 3: open the start page
 
-Click the container's **WebUI** button, which opens `https://<unraid-ip>:9943`.
-The browser warns about the certificate, because Euro Office created it for
-itself. Accept it, and the browser will show the editor inside OpenCloud later.
-
-The page that opens says whether the editor is ready and lists the three fields
-to set in OpenCloud (next section). Every other browser or device you edit
-documents on needs to open this address and accept the warning once as well.
+Click the container's **WebUI** button, which opens `http://<unraid-ip>:9900`.
+The page says whether the editor is ready and lists the three fields to set in
+OpenCloud (next section), with your server's address filled in.
 
 ### Manual install (pre-CA-listing)
 
@@ -190,27 +196,30 @@ is the cloud that stores your files. Connect them in the OpenCloud template:
 | OpenCloud field | Value |
 |---|---|
 | **Web office suite** | `euro-office` |
-| **Office document server URL** | `https://<unraid-ip>:9943` (or your reverse-proxy https URL) |
+| **Office document server URL** | `http://<unraid-ip>:9900`, the address the WebUI button opens |
 | **Office WOPI secret** | the **same** string you set as the **JWT secret** here |
 
 The two secrets **must be identical**, that is what lets the cloud and the
-editor trust each other. The URL has to be https, because OpenCloud is: an
-`http://` address here leaves the editor blank, and the OpenCloud log warns
-about it at startup.
+editor trust each other. OpenCloud (from version 1.4.0 of the container) shows
+the editor under its own address at `/euro-office/`, so plain http between the
+two containers is fine, there is no certificate to accept, and from outside
+(reverse proxy, Tailscale) only OpenCloud has to be reachable. An `https://`
+address such as `https://<unraid-ip>:9943` works too.
 
 After applying both containers, the **New** button in OpenCloud offers
 documents, spreadsheets and presentations, and existing files open in Euro
 Office. OpenCloud uses Euro Office for Microsoft formats by default and Collabora
 for OpenDocument, but Euro Office edits both.
 
-> [!TIP]
-> To skip the certificate warning on every device, give Euro Office a certificate
-> your browsers already trust: put it in the **Certificates** folder and fill in
-> **TLS certificate** and **TLS private key** (Advanced View). Unraid's combined
-> `*_unraid_bundle.pem` works too, enter that one file in both fields. From the
-> internet, put Euro Office behind a reverse proxy that terminates TLS (e.g.
-> `https://office.example.com`), point the proxy at the plain http port 9900 and
-> use the proxy's URL in OpenCloud.
+### Nextcloud or ownCloud
+
+They load the editor straight from Euro Office, so give them the https address,
+`https://<unraid-ip>:9943` (**HTTPS Port** under Advanced View), and accept the
+certificate warning once on every device. To avoid the warning, give Euro Office
+a certificate your browsers already trust: put it in the **Certificates** folder
+and fill in **TLS certificate** and **TLS private key** (Advanced View).
+Unraid's combined `*_unraid_bundle.pem` works too, enter that one file in both
+fields.
 
 <br>
 
@@ -229,8 +238,8 @@ for OpenDocument, but Euro Office edits both.
 
 | Port | Purpose |  | Volume (optional) | Purpose |
 |---|---|---|---|---|
-| `443` → `9943` | Editor over https, the address OpenCloud uses |  | `/var/www/euro-office/Data` | Keys, the self-signed certificate, fonts cache, forgotten files |
-| `80` → `9900` | Plain http, for a reverse proxy |  | `/var/log/euro-office` | Server logs, **leave unmounted**, see below |
+| `80` → `9900` | Start page and editor, the address OpenCloud uses |  | `/var/www/euro-office/Data` | Keys, the self-signed certificate, fonts cache, forgotten files |
+| `443` → `9943` | Editor over https, for Nextcloud and ownCloud |  | `/var/log/euro-office` | Server logs, **leave unmounted**, see below |
 |  |  |  | `/var/lib/postgresql` | Bundled database, **leave unmounted**, see below |
 |  |  |  | `/certs` (read-only) | Your own certificate, if you use one |
 
@@ -265,15 +274,14 @@ specific version, set an explicit tag in the template's *Repository* field
 <details>
 <summary><b>The editor area in OpenCloud stays blank, or the browser says "this content is blocked"</b></summary>
 
-- OpenCloud's **Office document server URL** still starts with `http://`. Browsers refuse to load an http editor inside the https OpenCloud page, and since the request is never sent, neither container logs anything. Change it to `https://<unraid-ip>:9943`. The OpenCloud log warns about this at startup.
-- Or this browser has not accepted the certificate yet: open `https://<unraid-ip>:9943` and accept the warning.
-- Or the **HTTPS Port** mapping is missing on an install from an older template: add a port with container port `443` and host port `9943` on the container's Edit page.
+- The OpenCloud container is older than 1.4.0. Older versions let the browser load the editor straight from Euro Office, and an `http://` address is then blocked as mixed content without any log entry. Update OpenCloud, or use `https://<unraid-ip>:9943` and accept the certificate warning in every browser.
+- Or OpenCloud uses a `proxy.yaml` of your own. Then it does not pass the editor through, and its startup log says so; use the https address as above.
 </details>
 
 <details>
 <summary><b>Documents won't open in OpenCloud ("error finding app providers" / editor never loads)</b></summary>
 
-- Open `https://<unraid-ip>:9943`: the start page says whether the editor service is ready. Right after the first boot it needs a minute or two.
+- Open `http://<unraid-ip>:9900`: the start page says whether the editor service is ready. Right after the first boot it needs a minute or two.
 - If Euro Office was down or came up after OpenCloud, the document entries in OpenCloud's **New** menu are missing for a moment. They come back on their own a minute or two after Euro Office is ready.
 - The **JWT secret** here and OpenCloud's **Office WOPI secret** must be byte-for-byte identical. A mismatch fails silently.
 - Make sure OpenCloud's **Office document server URL** is reachable *from the OpenCloud container* (use the LAN IP or a resolvable proxy hostname, not `localhost`).
