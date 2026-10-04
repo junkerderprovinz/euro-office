@@ -8,7 +8,7 @@
   <a href="https://github.com/euro-office/documentserver"><img src="https://img.shields.io/badge/Upstream-Euro%20Office-0a2f6e?style=for-the-badge&logo=github&logoColor=white" alt="Upstream" height="36"></a>&nbsp;
   <a href="https://github.com/junkerderprovinz/euro-office/pkgs/container/euro-office"><img src="https://img.shields.io/badge/Image-junkerderprovinz%2Feuro--office-1d99f3?style=for-the-badge&logo=docker&logoColor=white" alt="Image" height="36"></a>&nbsp;
   <a href="https://github.com/junkerderprovinz/opencloud"><img src="https://img.shields.io/badge/Pairs%20with-OpenCloud-f2b705?style=for-the-badge&logo=owncloud&logoColor=black" alt="OpenCloud" height="36"></a>&nbsp;
-  <a href="https://unraid.net"><img src="https://img.shields.io/badge/Unraid-Template-f15a2c?style=for-the-badge&logo=unraid&logoColor=white" alt="Unraid" height="36"></a>&nbsp;
+  <a href="https://ca.unraid.net/apps/euro-office-01m59u11rtj6n9"><img src="https://img.shields.io/badge/Unraid-Template-f15a2c?style=for-the-badge&logo=unraid&logoColor=white" alt="Unraid" height="36"></a>&nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-AGPL--3.0-blue?style=for-the-badge&logo=gnu&logoColor=white" alt="License: AGPL-3.0" height="36"></a>
 </p>
 
