@@ -39,20 +39,20 @@
     <div>
         <div class="content-block">
             <h1>Connect OpenCloud</h1>
-            <p>On the Unraid Docker tab, click the OpenCloud icon, choose Edit and switch to Advanced View (top right). Set these three fields and click Apply:</p>
+            <p id="connect-intro">On the Unraid Docker tab, click the OpenCloud icon and choose Edit. Set these three fields and click Apply:</p>
             <dl>
                 <dt>Web office suite</dt>
                 <dd><code>euro-office</code></dd>
                 <dt>Office document server URL</dt>
-                <dd><code id="server-url">https://YOUR-SERVER-IP:9943</code></dd>
+                <dd><code id="server-url">http://YOUR-SERVER-IP:9900</code></dd>
                 <dt>Office WOPI secret</dt>
                 <dd>exactly the same text as the JWT secret of this Euro Office container</dd>
             </dl>
-            <p>After that, the New button in OpenCloud offers documents, spreadsheets and presentations.</p>
+            <p>After that, the New button in OpenCloud offers documents, spreadsheets and presentations. OpenCloud shows the editor under its own address, so there is no certificate to accept. This needs the OpenCloud container from version 1.4.0 on.</p>
         </div>
         <div class="content-block">
-            <h1>Certificate</h1>
-            <p id="cert">Euro Office uses a certificate it created for itself. Open this page once over https and accept the browser's warning, otherwise the browser will not show the editor inside OpenCloud.</p>
+            <h1>Nextcloud or ownCloud</h1>
+            <p id="other">They load the editor straight from Euro Office, so give them the https address (port 9943 unless you mapped another one) and accept the browser's certificate warning once on every device.</p>
         </div>
     </div>
     <div class="black-block">
@@ -63,18 +63,13 @@
     </div>
     <script>
         (function () {
-            var secure = location.protocol === "https:";
-            var url = secure ? location.origin : "https://" + location.hostname + ":9943";
-            document.getElementById("server-url").textContent = url;
-
-            var cert = document.getElementById("cert");
-            if (secure) {
-                cert.textContent = "This browser has accepted the certificate, so it can show the editor inside OpenCloud. Every other browser or device needs to open this page once over https and accept the warning too.";
+            // Under /euro-office/ the page came through OpenCloud, which is then
+            // already connected and whose origin is not Euro Office's.
+            if (location.pathname.indexOf("/euro-office/") === 0) {
+                document.getElementById("connect-intro").textContent = "You opened this page through OpenCloud, so the two are already connected. For reference, these are the fields on OpenCloud's Edit page:";
+                document.getElementById("server-url").textContent = "the address of this Euro Office container, e.g. http://192.168.1.10:9900";
             } else {
-                cert.innerHTML = "Euro Office uses a certificate it created for itself. Open <a></a> once and accept the browser's warning, otherwise the browser will not show the editor inside OpenCloud. If you mapped a different HTTPS port, use that one instead of 9943.";
-                var link = cert.querySelector("a");
-                link.href = url + "/";
-                link.textContent = url;
+                document.getElementById("server-url").textContent = location.origin;
             }
 
             var status = document.getElementById("status");
