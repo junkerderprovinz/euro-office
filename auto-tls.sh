@@ -27,4 +27,5 @@ if [ "${AUTO_TLS:-true}" = "true" ] && ! { [ -f "${cert}" ] && [ -f "${key}" ]; 
     export SSL_KEY_PATH="${CERT_DIR}/tls.key"
 fi
 
+/usr/local/bin/print-banner.sh "Euro Office wrapper" "Euro Office's own start-up log follows"
 exec /entrypoint.sh "$@"

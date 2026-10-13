@@ -12,9 +12,9 @@ name: Build & Push
 #
 # Architecture: one native build job per platform, amd64 on ubuntu-latest and
 # arm64 on ubuntu-24.04-arm (free for public repos). Each job boots its image as
-# a smoke gate (chown-heal ran, Data ownership is correct and /hosting/discovery
-# answers) and pushes by digest; a merge job then assembles the multi-arch
-# manifest for both registries.
+# a smoke gate (/hosting/discovery answers and a bind-mounted Data belongs to
+# ds) and pushes by digest; a merge job then assembles the multi-arch manifest
+# for both registries.
 #
 # Triggers:
 #   * Push to main           -> latest, sha-<short>
@@ -86,10 +86,11 @@ jobs:
           cache-from: type=gha,scope=build-${{ matrix.arch }}
 
       # Smoke gate: the wrapper's files are present and executable, the container
-      # boots, chown-heal hands Data to the 'ds' user, and Euro Office's WOPI
-      # discovery endpoint answers. A static file check would miss a broken
-      # supervisor conf or a chown-heal regression.
-      - name: "Smoke test: ${{ matrix.arch }} must heal permissions and answer WOPI discovery"
+      # boots through auto-tls.sh and Euro Office's WOPI discovery endpoint
+      # answers. Data is bind-mounted from a runner folder, as Unraid mounts it
+      # from appdata, and the services running as ds only work if the vendor
+      # entrypoint hands that folder over to them (euro-office/documentserver#335).
+      - name: "Smoke test: ${{ matrix.arch }} must answer WOPI discovery with Data owned by ds"
         run: |
           set -euo pipefail
           img=euro-office:smoke-${{ matrix.arch }}
@@ -97,33 +98,36 @@ jobs:
           echo "== presence gate =="
           docker run --rm --entrypoint /bin/sh "$img" -c '
             set -e
-            test -x /usr/local/bin/chown-heal.sh || { echo "chown-heal.sh not executable"; exit 1; }
+            test -x /usr/local/bin/auto-tls.sh || { echo "auto-tls.sh not executable"; exit 1; }
             test -x /usr/local/bin/print-banner.sh || { echo "print-banner.sh not executable"; exit 1; }
-            test -f /etc/supervisor/conf.d/00-chown-heal.conf || { echo "chown-heal.conf missing"; exit 1; }
             id ds
           '
 
           echo "== boot gate =="
           name=eo-smoke-${{ matrix.arch }}
+          data="$(mktemp -d)"
           docker rm -f "$name" >/dev/null 2>&1 || true
           docker run -d --name "$name" \
+            -v "$data:/var/www/euro-office/Data" \
             -e WOPI_ENABLED=true \
             -e JWT_ENABLED=true \
             -e JWT_SECRET=smoketest-secret \
             "$img"
 
           ok=0
-          deadline=$((SECONDS + 150))
+          deadline=$((SECONDS + 180))
           while [ "$SECONDS" -lt "$deadline" ]; do
-            if docker logs "$name" 2>&1 | grep -q '\[chown-heal\] done'; then
-              echo "chown-heal completed after ${SECONDS}s, checking Data ownership and the discovery endpoint..."
+            if docker exec "$name" curl -fsS -o /dev/null http://localhost/hosting/discovery 2>/dev/null; then
+              echo "discovery answered after ${SECONDS}s, checking the banner and Data ownership..."
               owner="$(docker exec "$name" stat -c '%U:%G' /var/www/euro-office/Data)"
               echo "Data owner: ${owner}"
-              [ "$owner" = "ds:ds" ] || { echo "Data is not owned by ds:ds"; ok=0; break; }
-              if docker exec "$name" curl -fsS -o /dev/null http://localhost/hosting/discovery; then
-                ok=1
+              logs="$(docker logs "$name" 2>&1)"
+              if ! grep -q 'Euro Office wrapper' <<< "$logs"; then
+                echo "the wrapper banner is missing, auto-tls.sh did not run"
+              elif [ "$owner" != "ds:ds" ]; then
+                echo "Data is not owned by ds:ds"
               else
-                echo "discovery endpoint did not answer 200"
+                ok=1
               fi
               break
             fi
@@ -293,5 +297,5 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
-          short-description: "One-click Euro Office document server for Unraid - fixes a real upstream Data-volume permission gap."
+          short-description: "One-click Euro Office document server for Unraid, ready for OpenCloud, Nextcloud and ownCloud."
           enable-url-completion: true

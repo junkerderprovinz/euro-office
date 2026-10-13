@@ -1,13 +1,6 @@
 # syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
-# Unraid wrapper around the Euro Office Document Server image.
-#
-# The upstream build has its `chown -R ds:ds .../Data` step commented out
-# (build/.docker/standalone.bake.Dockerfile in euro-office/documentserver), so a
-# bind-mounted Data volume stays owned by root, while the docservice, adminpanel
-# and converter services run as `ds` and fail with EACCES on their own state
-# (junkerderprovinz/unraid-apps#7). chown-heal.sh fixes the ownership from an
-# extra supervisor program, which leaves ENTRYPOINT and the vendor's
-# entrypoint.sh untouched.
+# Unraid wrapper around the Euro Office Document Server image. auto-tls.sh runs
+# ahead of the vendor's entrypoint.sh, which itself stays untouched.
 #
 # Licensing: this wrapper (Dockerfile, scripts, banner) is AGPL-3.0-only; the
 # Euro Office binary in the base image is licensed by Euro Office. See LICENSE
@@ -19,15 +12,13 @@ ARG BASE=ghcr.io/euro-office/documentserver:latest
 FROM ${BASE}
 
 LABEL org.opencontainers.image.title="euro-office (Unraid wrapper)" \
-      org.opencontainers.image.description="One-click Euro Office document server for Unraid - fixes a real upstream Data-volume permission gap." \
+      org.opencontainers.image.description="One-click Euro Office document server for Unraid, ready for OpenCloud, Nextcloud and ownCloud." \
       org.opencontainers.image.source="https://github.com/junkerderprovinz/euro-office" \
       org.opencontainers.image.licenses="AGPL-3.0-only" \
       org.opencontainers.image.vendor="junkerderprovinz"
 
-# The base image sets no USER, so these steps run as root. Supervisord picks up
-# the conf file alongside the vendor's own programs.
-COPY auto-tls.sh chown-heal.sh print-banner.sh /usr/local/bin/
-COPY chown-heal.conf /etc/supervisor/conf.d/00-chown-heal.conf
+# The base image sets no USER, so these steps run as root.
+COPY auto-tls.sh print-banner.sh /usr/local/bin/
 COPY .github/assets/banner-raw.txt /usr/local/share/banner-raw.txt
 # The vendor's start page explains the test example and the admin panel, which
 # are both switched off here and only lead people away from OpenCloud. The
@@ -59,6 +50,6 @@ RUN tr -d '\r' < /usr/local/share/banner-raw.txt > /usr/local/share/banner.txt \
  && sed -i 's|^\(  set \$secure_link_secret .*;\)$|\1\n  rewrite ^/euro-office(/.*)$ $1 last;|' "${SSL_TMPL}" "${HTTP_TMPL}" \
  && [ "$(grep -c '^  rewrite ^/euro-office' "${SSL_TMPL}")" = 3 ] \
  && [ "$(grep -c '^  rewrite ^/euro-office' "${HTTP_TMPL}")" = 1 ] \
- && chmod +x /usr/local/bin/auto-tls.sh /usr/local/bin/chown-heal.sh /usr/local/bin/print-banner.sh
+ && chmod +x /usr/local/bin/auto-tls.sh /usr/local/bin/print-banner.sh
 
 ENTRYPOINT ["/usr/local/bin/auto-tls.sh"]

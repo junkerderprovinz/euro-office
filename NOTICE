@@ -4,7 +4,7 @@ NOTICE - Bundled Software in the Euro Office Unraid Wrapper Image
 The GNU Affero General Public License v3.0 (AGPL-3.0, see LICENSE) covers ONLY the wrapper assets in this
 repository:
   * Dockerfile
-  * chown-heal.sh, chown-heal.conf and print-banner.sh
+  * auto-tls.sh, print-banner.sh and welcome.html
   * Unraid container template (maintained in the junkerderprovinz/unraid-apps repo)
   * README, banner and icon artwork
 

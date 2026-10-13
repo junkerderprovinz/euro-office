@@ -29,5 +29,5 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ vars.DOCKERHUB_USERNAME }}/euro-office
-          short-description: "One-click Euro Office document server for Unraid - fixes a real upstream Data-volume permission gap."
+          short-description: "One-click Euro Office document server for Unraid, ready for OpenCloud, Nextcloud and ownCloud."
           enable-url-completion: true
