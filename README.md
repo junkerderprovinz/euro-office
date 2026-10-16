@@ -22,11 +22,13 @@ WOPI. Install from the Unraid <b>Apps</b> tab, set one shared secret, done.
 
 <!-- download-buttons: written by scripts/gen_download_buttons.py -->
 <p align="center">
-  <a href="https://ca.unraid.net/apps/euro-office-01m59u11rtj6n9"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(0,0,841.9,245.3))" alt="Install from Unraid&#x27;s Community Applications" width="160" height="46.618"></a>
+  <a href="https://ca.unraid.net/apps/euro-office-01m59u11rtj6n9"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=70a4d0d3a904#svgView(viewBox(0,0,841.9,245.3))" alt="Install from Unraid&#x27;s Community Applications" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://github.com/junkerderprovinz/euro-office/pkgs/container/euro-office"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(866,0,841.9,245.3))" alt="Run it with Docker" width="160" height="46.618"></a>
+  <a href="https://mos-official.net/apps.html?search=Euro-Office"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=70a4d0d3a904#svgView(viewBox(866,0,841.9,245.3))" alt="Install from the MOS Hub" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://github.com/junkerderprovinz/euro-office/releases/latest"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(1732,0,841.9,245.3))" alt="Download the source archive" width="160" height="46.618"></a>
+  <a href="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/compose.yaml"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=70a4d0d3a904#svgView(viewBox(1732,0,841.9,245.3))" alt="Download the docker-compose file" width="160" height="46.618"></a>
+  &nbsp;
+  <a href="https://github.com/junkerderprovinz/euro-office/releases/latest"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=70a4d0d3a904#svgView(viewBox(2598,0,841.9,245.3))" alt="Download the source archive" width="160" height="46.618"></a>
 </p>
 <!-- /download-buttons -->
 
@@ -42,11 +44,11 @@ If it has earned a place on your server or computer, toss a coin to your knight:
 
 <!-- give-buttons: written by scripts/gen_download_buttons.py -->
 <p align="center">
-  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(2598,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
+  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=70a4d0d3a904#svgView(viewBox(3464,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(3464,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
+  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=70a4d0d3a904#svgView(viewBox(4330,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(4330,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
+  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=70a4d0d3a904#svgView(viewBox(5196,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
 </p>
 <!-- /give-buttons -->
 
@@ -107,20 +109,15 @@ The documents in these pictures are made up.
 
 The **New** button in OpenCloud then offers documents, spreadsheets and presentations, and Office files open in Euro Office. This needs the OpenCloud container 1.4.0 or later. An older one loads the editor straight from Euro Office and needs its https address, `https://<server-ip>:9943`.
 
-Without Unraid:
+Nextcloud and ownCloud need the https port as well (**HTTPS Port** under Advanced View in the template, 9943 in the compose file). Accept its certificate once on every device, or put a certificate your browsers trust in the **Certificates** folder and fill in **TLS certificate** and **TLS private key**. Leave **Logs** and **Database** empty: an empty folder mounted there hides what the image ships, and the container cannot start.
 
-```bash
-docker run -d --name euro-office \
-  -p 9900:80 \
-  -e WOPI_ENABLED=true \
-  -e JWT_ENABLED=true \
-  -e JWT_SECRET=change-me-to-a-long-random-string \
-  -e USE_UNAUTHORIZED_STORAGE=true \
-  --restart unless-stopped \
-  ghcr.io/junkerderprovinz/euro-office:latest
-```
+### Other Docker hosts
 
-Nextcloud and ownCloud need the https port as well (`-p 9943:443`, **HTTPS Port** under Advanced View in the template). Accept its certificate once on every device, or put a certificate your browsers trust in the **Certificates** folder and fill in **TLS certificate** and **TLS private key**. Leave **Logs** and **Database** empty: an empty folder mounted there hides what the image ships, and the container cannot start.
+[compose.yaml](compose.yaml) runs Euro Office on any Linux server with Docker. Put it in a folder of its own, fill in every value marked `required` and start it with `docker compose up -d`. The folders are created next to the file.
+
+- **Synology:** in Container Manager, create a project from the file (DSM 7.2 or newer).
+- **Proxmox:** run it in a VM or an LXC container that has Docker.
+- **MOS:** install Euro Office from the [MOS Hub](https://mos-official.net/apps.html?search=Euro-Office).
 
 <br>
 
@@ -142,11 +139,11 @@ If it has earned a place on your server or computer, toss a coin to your knight:
 
 <!-- give-buttons: written by scripts/gen_download_buttons.py -->
 <p align="center">
-  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(2598,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
+  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=70a4d0d3a904#svgView(viewBox(3464,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(3464,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
+  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=70a4d0d3a904#svgView(viewBox(4330,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(4330,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
+  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=70a4d0d3a904#svgView(viewBox(5196,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
 </p>
 <!-- /give-buttons -->
 
