@@ -10,6 +10,8 @@ REPO = "euro-office"
 BUTTONS = {
     "unraid": "https://ca.unraid.net/apps/euro-office-01m59u11rtj6n9",
     "mos": "https://mos-official.net/apps.html?search=Euro-Office",
+    "zimaos": "https://github.com/junkerderprovinz/zimaos-apps#install",
+    "umbrel": "https://github.com/junkerderprovinz/umbrel-apps#install",
     "compose": "https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/compose.yaml",
     # A release's "Source code (zip)" is the whole repository at that tag, and
     # GitHub gives the newest one no fixed address, so this leads to the release
