@@ -7,7 +7,7 @@
 
 services:
   euro-office:
-    image: ghcr.io/junkerderprovinz/euro-office:latest
+    image: ghcr.io/junkerderprovinz/euro-office:latest@sha256:e9113a85e89eab419f44fa15bcd582adaa37a7f5853e56f2a2911b2f064ba283
     container_name: euro-office
     restart: unless-stopped
     ports:
