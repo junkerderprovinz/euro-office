@@ -8,7 +8,7 @@ name: Build & Push
 #
 # Single channel, tracking upstream's floating :latest tag (ARG BASE= in the
 # Dockerfile) without a version pin. The weekly cron rebuild resolves whatever
-# :latest points to and publishes it as edge, as in the other own-image repos.
+# :latest points to and publishes it under the newest release's tags and latest.
 #
 # Architecture: one native build job per platform, amd64 on ubuntu-latest and
 # arm64 on ubuntu-24.04-arm (free for public repos). Each job boots its image as
@@ -20,9 +20,9 @@ name: Build & Push
 #   * Push to main           -> edge, sha-<short>
 #   * Tag v*.*.*              -> <version>, <major>.<minor>, <major>, and latest on
 #     the newest tag
-#   * Weekly cron (Sun 04 UTC), which picks up upstream Euro Office and Ubuntu
-#     updates
-#   * Manual workflow_dispatch
+#   * Weekly cron (Sun 04 UTC) and manual workflow_dispatch -> the newest
+#     release rebuilt without the layer cache under its version tags and latest,
+#     which picks up upstream Euro Office and Ubuntu updates
 
 on:
   push:
@@ -36,7 +36,28 @@ env:
   IMAGE_NAME: euro-office
 
 jobs:
+  # Rebuilds refresh the newest release, which is what people run, not the
+  # tip of main.
+  release:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.newest.outputs.tag }}
+    steps:
+      - name: Find the newest release
+        id: newest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release view -R "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
+          echo "rebuilding $tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: release
+    if: ${{ !failure() && !cancelled() }}
     strategy:
       fail-fast: true
       matrix:
@@ -58,6 +79,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.release.outputs.tag }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
@@ -85,6 +108,7 @@ jobs:
           load: true
           tags: euro-office:smoke-${{ matrix.arch }}
           cache-from: type=gha,scope=build-${{ matrix.arch }}
+          no-cache: ${{ needs.release.outputs.tag != '' }}
 
       # Smoke gate: the wrapper's files are present and executable, the container
       # boots through auto-tls.sh and Euro Office's WOPI discovery endpoint
@@ -177,6 +201,7 @@ jobs:
           outputs: type=image,name=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=build-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}
+          no-cache: ${{ needs.release.outputs.tag != '' }}
 
       - name: Export digest
         run: |
@@ -193,7 +218,8 @@ jobs:
           retention-days: 1
 
   merge:
-    needs: build
+    needs: [ release, build ]
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -261,12 +287,12 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=latest,enable=${{ github.ref_type == 'tag' && steps.newest.outputs.is_newest == 'true' }}
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha,format=short
+            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' && needs.release.outputs.tag == '' }}
+            type=raw,value=latest,enable=${{ (github.ref_type == 'tag' && steps.newest.outputs.is_newest == 'true') || needs.release.outputs.tag != '' }}
+            type=semver,pattern={{version}},value=${{ needs.release.outputs.tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release.outputs.tag }}
+            type=semver,pattern={{major}},value=${{ needs.release.outputs.tag }}
+            type=sha,format=short,enable=${{ needs.release.outputs.tag == '' }}
 
       # Assemble the multi-arch manifest for every tag (both registries) from the
       # per-arch digests pushed to GHCR. imagetools copies platform images across
@@ -302,7 +328,7 @@ jobs:
   # manifest exists. Skipped until DOCKERHUB_TOKEN is set.
   dockerhub-description:
     needs: merge
-    if: ${{ vars.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}
+    if: ${{ !failure() && !cancelled() && vars.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}
     # A cosmetic sync; a refused credential here must not fail the published image.
     continue-on-error: true
     runs-on: ubuntu-latest
