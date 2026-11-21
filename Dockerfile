@@ -18,6 +18,10 @@ LABEL org.opencontainers.image.title="euro-office (Unraid wrapper)" \
       org.opencontainers.image.vendor="junkerderprovinz"
 
 # The base image sets no USER, so these steps run as root.
+# The upgrade takes the security fixes published since the base image was built.
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
+ && rm -rf /var/lib/apt/lists/*
 COPY auto-tls.sh print-banner.sh /usr/local/bin/
 COPY .github/assets/banner-raw.txt /usr/local/share/banner-raw.txt
 # The vendor's start page explains the test example and the admin panel, which
