@@ -178,6 +178,42 @@ jobs:
           [ "$ok" = "1" ] || { echo "smoke failed"; exit 1; }
           echo "smoke passed"
 
+      # Proxmox removes an image's private keys when it creates an LXC from it,
+      # as it does with a template's SSH host keys, and the bundled PostgreSQL
+      # will not start without the snakeoil key.
+      - name: "Smoke test: ${{ matrix.arch }} must start without the snakeoil key"
+        run: |
+          set -euo pipefail
+          img=euro-office:smoke-${{ matrix.arch }}
+          name=eo-nokey-${{ matrix.arch }}
+          docker rm -f "$name" >/dev/null 2>&1 || true
+          docker run -d --name "$name" \
+            -e WOPI_ENABLED=true \
+            -e JWT_ENABLED=true \
+            -e JWT_SECRET=smoketest-secret \
+            --entrypoint /bin/sh "$img" \
+            -c 'rm /etc/ssl/private/ssl-cert-snakeoil.key && exec /usr/local/bin/auto-tls.sh'
+
+          ok=0
+          deadline=$((SECONDS + 180))
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            if docker exec "$name" curl -fsS -o /dev/null http://localhost/hosting/discovery 2>/dev/null; then
+              echo "discovery answered after ${SECONDS}s"
+              ok=1
+              break
+            fi
+            if [ -z "$(docker ps -q --filter name="$name")" ]; then
+              echo "container exited early:"; break
+            fi
+            sleep 3
+          done
+
+          echo "== last logs =="
+          docker logs "$name" 2>&1 | tail -40 || true
+          docker rm -f "$name" >/dev/null 2>&1 || true
+          [ "$ok" = "1" ] || { echo "smoke failed"; exit 1; }
+          echo "smoke passed"
+
       # CVE scan of the locally loaded smoke image. Report-only (exit-code 0), so a
       # finding never blocks the build; results land in the repo Security tab.
       - name: Scan image for CVEs (Trivy)
