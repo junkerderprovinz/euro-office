@@ -18,6 +18,7 @@ name: Build & Push
 #
 # Triggers:
 #   * Push to main           -> edge, sha-<short>
+#   * Other branch           -> built and smoke-tested, nothing pushed
 #   * Tag v*.*.*              -> <version>, <major>.<minor>, <major>, and latest on
 #     the newest tag
 #   * Weekly cron (Sun 04 UTC) and manual workflow_dispatch -> the newest
@@ -26,7 +27,7 @@ name: Build & Push
 
 on:
   push:
-    branches: [ main ]
+    branches: [ '**', '!renovate/**' ]
     tags: [ 'v*.*.*' ]
   # A pull request builds and smoke-tests the image but pushes nothing.
   pull_request:
@@ -80,6 +81,10 @@ jobs:
       contents: read
       packages: write
       security-events: write
+    env:
+      # Only main, release tags and rebuilds of the newest release publish.
+      # Other branches build and smoke-test.
+      PUBLISH: ${{ github.ref_type == 'tag' || github.ref_name == 'main' || needs.release.outputs.tag != '' }}
 
     steps:
       - name: Checkout
@@ -91,7 +96,7 @@ jobs:
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
 
       - name: Login to GHCR
-        if: github.event_name != 'pull_request'
+        if: env.PUBLISH == 'true'
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4
         with:
           registry: ghcr.io
@@ -201,7 +206,7 @@ jobs:
       # Push this arch by digest without tags; the merge job assembles the
       # multi-arch manifest under the final tags.
       - name: Push ${{ matrix.arch }} by digest
-        if: github.event_name != 'pull_request'
+        if: env.PUBLISH == 'true'
         id: push
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
@@ -215,14 +220,14 @@ jobs:
           no-cache: ${{ needs.release.outputs.tag != '' }}
 
       - name: Export digest
-        if: github.event_name != 'pull_request'
+        if: env.PUBLISH == 'true'
         run: |
           mkdir -p /tmp/digests
           digest="${{ steps.push.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"
 
       - name: Upload digest
-        if: github.event_name != 'pull_request'
+        if: env.PUBLISH == 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: digests-${{ matrix.arch }}
@@ -232,7 +237,7 @@ jobs:
 
   merge:
     needs: [ release, build ]
-    if: ${{ !failure() && !cancelled() && github.event_name != 'pull_request' }}
+    if: ${{ !failure() && !cancelled() && (github.ref_type == 'tag' || github.ref_name == 'main' || needs.release.outputs.tag != '') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -341,7 +346,7 @@ jobs:
   # manifest exists. Skipped until DOCKERHUB_TOKEN is set.
   dockerhub-description:
     needs: merge
-    if: ${{ !failure() && !cancelled() && vars.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}
+    if: ${{ !failure() && !cancelled() && vars.DOCKERHUB_USERNAME != '' && needs.merge.result == 'success' }}
     # A cosmetic sync; a refused credential here must not fail the published image.
     continue-on-error: true
     runs-on: ubuntu-latest
