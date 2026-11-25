@@ -155,7 +155,7 @@ Euro-Office runs on Proxmox VE 9.2 from its image, tested there. Proxmox 9.1 and
 JWT_SECRET='a-long-random-string' bash <(curl -fsSL https://raw.githubusercontent.com/junkerderprovinz/proxmox-apps/main/image.sh) install euro-office
 ```
 
-To update, run the same line with `update` in place of `install`. It replaces the container and keeps the folders and the address. The values in front of the command are only needed the first time. This way works from the next release of Euro-Office. The current image does not start in a Proxmox container yet.
+To update, run the same line with `update` in place of `install`. It replaces the container and keeps the folders and the address. The values in front of the command are only needed the first time.
 
 Docker works just as well, nothing is wrong with it. Create a container with Docker using the Community Scripts and start the compose file in it, as under [Other Docker hosts](#other-docker-hosts):
 
