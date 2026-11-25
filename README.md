@@ -40,20 +40,27 @@ WOPI. Install from the Unraid <b>Apps</b> tab, set one shared secret, done.
   <picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/sections/group-server-dark.svg"><img src=".github/assets/sections/group-server.svg" alt="Server" width="100%"></picture>
 </p>
 <p align="center">
-  <a href="https://ca.unraid.net/apps/euro-office-01m59u11rtj6n9"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(0,0,841.9,245.3))" alt="Install from Unraid&#x27;s Community Applications" width="160" height="46.618"></a>
+  <a href="https://ca.unraid.net/apps/euro-office-01m59u11rtj6n9"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c88f649de6b3#svgView(viewBox(0,0,841.9,245.3))" alt="Install from Unraid&#x27;s Community Applications" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://mos-official.net/apps.html?search=Euro-Office"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(866,0,841.9,245.3))" alt="Install from the MOS Hub" width="160" height="46.618"></a>
+  <a href="https://mos-official.net/apps.html?search=Euro-Office"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c88f649de6b3#svgView(viewBox(866,0,841.9,245.3))" alt="Install from the MOS Hub" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://github.com/junkerderprovinz/zimaos-apps#install"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(1732,0,841.9,245.3))" alt="Install from the ZimaOS and CasaOS store" width="160" height="46.618"></a>
+  <a href="https://github.com/junkerderprovinz/zimaos-apps#install"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c88f649de6b3#svgView(viewBox(1732,0,841.9,245.3))" alt="Install from the ZimaOS and CasaOS store" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://github.com/junkerderprovinz/umbrel-apps#install"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(2598,0,841.9,245.3))" alt="Install from the umbrelOS community app store" width="160" height="46.618"></a>
+  <a href="https://github.com/junkerderprovinz/umbrel-apps#install"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c88f649de6b3#svgView(viewBox(2598,0,841.9,245.3))" alt="Install from the umbrelOS community app store" width="160" height="46.618"></a>
 </p>
 <p align="center">
-  <a href="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/compose.yaml"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(3464,0,841.9,245.3))" alt="Download the docker-compose file" width="160" height="46.618"></a>
+  <a href="#proxmox-ve"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c88f649de6b3#svgView(viewBox(3464,0,841.9,245.3))" alt="Run it on Proxmox VE" width="160" height="46.618"></a>
   &nbsp;
-  <a href="#proxmox-ve"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(4330,0,841.9,245.3))" alt="Run it on Proxmox VE" width="160" height="46.618"></a>
+  <a href="#synology"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c88f649de6b3#svgView(viewBox(4330,0,841.9,245.3))" alt="Run it on a Synology NAS" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://github.com/junkerderprovinz/euro-office/releases/latest"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(5196,0,841.9,245.3))" alt="Download the source archive" width="160" height="46.618"></a>
+  <a href="#qnap"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c88f649de6b3#svgView(viewBox(5196,0,841.9,245.3))" alt="Run it on a QNAP NAS" width="160" height="46.618"></a>
+  &nbsp;
+  <a href="#ugreen"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c88f649de6b3#svgView(viewBox(6062,0,841.9,245.3))" alt="Run it on a UGREEN NAS" width="160" height="46.618"></a>
+</p>
+<p align="center">
+  <a href="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/compose.yaml"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c88f649de6b3#svgView(viewBox(6928,0,841.9,245.3))" alt="Download the docker-compose file" width="160" height="46.618"></a>
+  &nbsp;
+  <a href="https://github.com/junkerderprovinz/euro-office/releases/latest"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c88f649de6b3#svgView(viewBox(7794,0,841.9,245.3))" alt="Download the source archive" width="160" height="46.618"></a>
 </p>
 <!-- /download-buttons -->
 
@@ -71,11 +78,11 @@ If it has earned a place on your server or computer, toss a coin to your knight:
 
 <!-- give-buttons: written by scripts/gen_download_buttons.py -->
 <p align="center">
-  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(6062,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
+  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c88f649de6b3#svgView(viewBox(8660,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(6928,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
+  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c88f649de6b3#svgView(viewBox(9526,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(7794,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
+  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c88f649de6b3#svgView(viewBox(10392,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
 </p>
 <!-- /give-buttons -->
 
@@ -132,9 +139,9 @@ Nextcloud and ownCloud need the https port as well (**HTTPS Port** under Advance
 
 [compose.yaml](compose.yaml) runs Euro Office on any Linux server with Docker. Put it in a folder of its own, fill in every value marked `required` and start it with `docker compose up -d`. The folders are created next to the file.
 
-- **Synology:** in Container Manager, create a project from the file (DSM 7.2 or newer).
-- **Ugreen:** in the Docker app of UGOS Pro, create a project from the file.
-- **QNAP:** in Container Station, create an application from the file.
+- **Synology:** see [Synology](#synology) below.
+- **QNAP:** see [QNAP](#qnap) below.
+- **UGREEN:** see [UGREEN](#ugreen) below.
 - **Proxmox:** see [Proxmox VE](#proxmox-ve) below.
 - **MOS:** install Euro Office from the [MOS Hub](https://mos-official.net/apps.html?search=Euro-Office).
 - **ZimaOS and CasaOS:** add the [community store](https://github.com/junkerderprovinz/zimaos-apps#install) and install Euro Office from it.
@@ -157,6 +164,20 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/Proxmo
 ```
 
 For a virtual machine instead, take `vm/docker-vm.sh` from the same place.
+
+### Synology
+
+In Container Manager (DSM 7.2 or newer), open **Project** and click **Create**. Pick a folder for Euro Office and upload [compose.yaml](compose.yaml). Container Manager does not create missing folders, so create the ones the file names under `volumes` in File Station first.
+
+### QNAP
+
+In Container Station, open **Applications** and click **Create**. Paste [compose.yaml](compose.yaml) and point the folders under `volumes` at a share, for example `/share/Container/euro-office`.
+
+### UGREEN
+
+In the Docker app of UGOS Pro, open **Project** and click **Create**. Pick a folder for Euro Office and paste [compose.yaml](compose.yaml).
+
+<sub>The Synology logo is a trademark of Synology Inc. and the QNAP logo a trademark of QNAP Systems, Inc., both registered in Taiwan and other regions.</sub>
 
 <br>
 
