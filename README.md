@@ -177,6 +177,8 @@ In Container Station, open **Applications** and click **Create**. Paste [compose
 
 In the Docker app of UGOS Pro, open **Project** and click **Create**. Pick a folder for Euro Office and paste [compose.yaml](compose.yaml).
 
+Euro-Office needs about 5 GB of RAM, more than many small NAS models have.
+
 <sub>The Synology logo is a trademark of Synology Inc. and the QNAP logo a trademark of QNAP Systems, Inc., both registered in Taiwan and other regions.</sub>
 
 <br>
