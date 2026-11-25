@@ -27,5 +27,12 @@ if [ "${AUTO_TLS:-true}" = "true" ] && ! { [ -f "${cert}" ] && [ -f "${key}" ]; 
     export SSL_KEY_PATH="${CERT_DIR}/tls.key"
 fi
 
+# Proxmox removes an image's private keys when it creates an LXC from it, and
+# the bundled PostgreSQL will not start without this one.
+if [ ! -f /etc/ssl/private/ssl-cert-snakeoil.key ]; then
+    make-ssl-cert generate-default-snakeoil --force-overwrite
+    echo "[auto-tls] the snakeoil key PostgreSQL needs was missing, created a new one"
+fi
+
 /usr/local/bin/print-banner.sh "Euro Office wrapper" "Euro Office's own start-up log follows"
 exec /entrypoint.sh "$@"
