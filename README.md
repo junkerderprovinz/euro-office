@@ -40,18 +40,20 @@ WOPI. Install from the Unraid <b>Apps</b> tab, set one shared secret, done.
   <picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/sections/group-server-dark.svg"><img src=".github/assets/sections/group-server.svg" alt="Server" width="100%"></picture>
 </p>
 <p align="center">
-  <a href="https://ca.unraid.net/apps/euro-office-01m59u11rtj6n9"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=509c6fbfa82d#svgView(viewBox(0,0,841.9,245.3))" alt="Install from Unraid&#x27;s Community Applications" width="160" height="46.618"></a>
+  <a href="https://ca.unraid.net/apps/euro-office-01m59u11rtj6n9"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(0,0,841.9,245.3))" alt="Install from Unraid&#x27;s Community Applications" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://mos-official.net/apps.html?search=Euro-Office"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=509c6fbfa82d#svgView(viewBox(866,0,841.9,245.3))" alt="Install from the MOS Hub" width="160" height="46.618"></a>
+  <a href="https://mos-official.net/apps.html?search=Euro-Office"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(866,0,841.9,245.3))" alt="Install from the MOS Hub" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://github.com/junkerderprovinz/zimaos-apps#install"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=509c6fbfa82d#svgView(viewBox(1732,0,841.9,245.3))" alt="Install from the ZimaOS and CasaOS store" width="160" height="46.618"></a>
+  <a href="https://github.com/junkerderprovinz/zimaos-apps#install"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(1732,0,841.9,245.3))" alt="Install from the ZimaOS and CasaOS store" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://github.com/junkerderprovinz/umbrel-apps#install"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=509c6fbfa82d#svgView(viewBox(2598,0,841.9,245.3))" alt="Install from the umbrelOS community app store" width="160" height="46.618"></a>
+  <a href="https://github.com/junkerderprovinz/umbrel-apps#install"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(2598,0,841.9,245.3))" alt="Install from the umbrelOS community app store" width="160" height="46.618"></a>
 </p>
 <p align="center">
-  <a href="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/compose.yaml"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=509c6fbfa82d#svgView(viewBox(3464,0,841.9,245.3))" alt="Download the docker-compose file" width="160" height="46.618"></a>
+  <a href="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/compose.yaml"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(3464,0,841.9,245.3))" alt="Download the docker-compose file" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://github.com/junkerderprovinz/euro-office/releases/latest"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=509c6fbfa82d#svgView(viewBox(4330,0,841.9,245.3))" alt="Download the source archive" width="160" height="46.618"></a>
+  <a href="#proxmox-ve"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(4330,0,841.9,245.3))" alt="Run it on Proxmox VE" width="160" height="46.618"></a>
+  &nbsp;
+  <a href="https://github.com/junkerderprovinz/euro-office/releases/latest"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(5196,0,841.9,245.3))" alt="Download the source archive" width="160" height="46.618"></a>
 </p>
 <!-- /download-buttons -->
 
@@ -69,11 +71,11 @@ If it has earned a place on your server or computer, toss a coin to your knight:
 
 <!-- give-buttons: written by scripts/gen_download_buttons.py -->
 <p align="center">
-  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=509c6fbfa82d#svgView(viewBox(5196,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
+  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(6062,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=509c6fbfa82d#svgView(viewBox(6062,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
+  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(6928,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=509c6fbfa82d#svgView(viewBox(6928,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
+  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/euro-office/main/.github/assets/download-buttons/buttons.svg?v=c8feaa0ba74e#svgView(viewBox(7794,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
 </p>
 <!-- /give-buttons -->
 
@@ -131,10 +133,28 @@ Nextcloud and ownCloud need the https port as well (**HTTPS Port** under Advance
 [compose.yaml](compose.yaml) runs Euro Office on any Linux server with Docker. Put it in a folder of its own, fill in every value marked `required` and start it with `docker compose up -d`. The folders are created next to the file.
 
 - **Synology:** in Container Manager, create a project from the file (DSM 7.2 or newer).
-- **Proxmox:** run it in a VM or an LXC container that has Docker.
+- **Proxmox:** see [Proxmox VE](#proxmox-ve) below.
 - **MOS:** install Euro Office from the [MOS Hub](https://mos-official.net/apps.html?search=Euro-Office).
 - **ZimaOS and CasaOS:** add the [community store](https://github.com/junkerderprovinz/zimaos-apps#install) and install Euro Office from it.
 - **umbrelOS:** add the [community app store](https://github.com/junkerderprovinz/umbrel-apps#install) and install Euro Office from it.
+
+### Proxmox VE
+
+Euro-Office runs on Proxmox VE 9.2 from its image, tested there. Proxmox 9.1 and newer turn the container image into a container of its own. Without the Docker layer, Euro-Office needs less memory and disk, and Proxmox backs it up together with its container. Its data stays in folders under `/srv/euro-office` on the host. Proxmox still calls this a technology preview.
+
+```bash
+JWT_SECRET='a-long-random-string' bash <(curl -fsSL https://raw.githubusercontent.com/junkerderprovinz/proxmox-apps/main/image.sh) install euro-office
+```
+
+To update, run the same line with `update` in place of `install`. It replaces the container and keeps the folders and the address. The values in front of the command are only needed the first time. This way works from the next release of Euro-Office. The current image does not start in a Proxmox container yet.
+
+Docker works just as well, nothing is wrong with it. Create a container with Docker using the Community Scripts and start the compose file in it, as under [Other Docker hosts](#other-docker-hosts):
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/docker.sh)"
+```
+
+For a virtual machine instead, take `vm/docker-vm.sh` from the same place.
 
 <br>
 
